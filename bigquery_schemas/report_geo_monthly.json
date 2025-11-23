@@ -1,0 +1,32 @@
+[
+  {
+    "name": "report_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Date du rapport (1er jour du mois concerné)"
+  },
+  {
+    "name": "country_id",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Identifiant du pays"
+  },
+  {
+    "name": "country_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Nom du pays"
+  },
+  {
+    "name": "ad_server_impressions",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Nombre d'impressions"
+  },
+  {
+    "name": "ad_server_clicks",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Nombre de clics"
+  }
+]
