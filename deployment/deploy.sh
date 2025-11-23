@@ -3,8 +3,15 @@
 
 set -e
 
+# Validate required environment variables
+if [ -z "$GCP_PROJECT_ID" ]; then
+  echo "Error: GCP_PROJECT_ID environment variable is not set"
+  echo "Usage: export GCP_PROJECT_ID=your-project-id"
+  exit 1
+fi
+
 # Configuration
-PROJECT_ID="${GCP_PROJECT_ID:-your-project-id}"
+PROJECT_ID="$GCP_PROJECT_ID"
 REGION="${REGION:-europe-west1}"
 FUNCTION_NAME="gam-reporting-automation"
 SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-gam-reporter@${PROJECT_ID}.iam.gserviceaccount.com}"
@@ -37,7 +44,7 @@ gcloud functions deploy "$FUNCTION_NAME" \
   --source=. \
   --entry-point="$ENTRY_POINT" \
   --trigger-http \
-  --allow-unauthenticated=false \
+  --no-allow-unauthenticated \
   --service-account="$SERVICE_ACCOUNT" \
   --memory="$MEMORY" \
   --timeout="$TIMEOUT" \

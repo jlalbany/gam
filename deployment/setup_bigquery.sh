@@ -3,8 +3,15 @@
 
 set -e
 
+# Validate required environment variables
+if [ -z "$GCP_PROJECT_ID" ]; then
+  echo "Error: GCP_PROJECT_ID environment variable is not set"
+  echo "Usage: export GCP_PROJECT_ID=your-project-id"
+  exit 1
+fi
+
 # Configuration
-PROJECT_ID="${GCP_PROJECT_ID:-your-project-id}"
+PROJECT_ID="$GCP_PROJECT_ID"
 DATASET_ID="gam_data"
 LOCATION="EU"  # Change to US if needed
 

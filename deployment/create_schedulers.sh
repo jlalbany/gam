@@ -3,8 +3,15 @@
 
 set -e
 
+# Validate required environment variables
+if [ -z "$GCP_PROJECT_ID" ]; then
+  echo "Error: GCP_PROJECT_ID environment variable is not set"
+  echo "Usage: export GCP_PROJECT_ID=your-project-id"
+  exit 1
+fi
+
 # Configuration
-PROJECT_ID="${GCP_PROJECT_ID:-your-project-id}"
+PROJECT_ID="$GCP_PROJECT_ID"
 REGION="${REGION:-europe-west1}"
 FUNCTION_NAME="gam-reporting-automation"
 SERVICE_ACCOUNT="${SERVICE_ACCOUNT:-gam-reporter@${PROJECT_ID}.iam.gserviceaccount.com}"
@@ -40,7 +47,6 @@ gcloud scheduler jobs create http trigger-gam-inventory-daily \
   --time-zone="Europe/Paris" \
   --uri="$FUNCTION_URL" \
   --http-method=POST \
-  --headers="Content-Type=application/json" \
   --message-body='{"report_type":"INVENTORY_DAILY"}' \
   --oidc-service-account-email="$SERVICE_ACCOUNT" \
   --project="$PROJECT_ID" \
@@ -51,7 +57,6 @@ gcloud scheduler jobs create http trigger-gam-inventory-daily \
      --time-zone="Europe/Paris" \
      --uri="$FUNCTION_URL" \
      --http-method=POST \
-     --headers="Content-Type=application/json" \
      --message-body='{"report_type":"INVENTORY_DAILY"}' \
      --oidc-service-account-email="$SERVICE_ACCOUNT" \
      --project="$PROJECT_ID" \
@@ -66,7 +71,6 @@ gcloud scheduler jobs create http trigger-gam-geo-monthly \
   --time-zone="Europe/Paris" \
   --uri="$FUNCTION_URL" \
   --http-method=POST \
-  --headers="Content-Type=application/json" \
   --message-body='{"report_type":"GEO_MONTHLY"}' \
   --oidc-service-account-email="$SERVICE_ACCOUNT" \
   --project="$PROJECT_ID" \
@@ -77,7 +81,6 @@ gcloud scheduler jobs create http trigger-gam-geo-monthly \
      --time-zone="Europe/Paris" \
      --uri="$FUNCTION_URL" \
      --http-method=POST \
-     --headers="Content-Type=application/json" \
      --message-body='{"report_type":"GEO_MONTHLY"}' \
      --oidc-service-account-email="$SERVICE_ACCOUNT" \
      --project="$PROJECT_ID" \

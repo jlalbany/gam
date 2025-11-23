@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 import yaml
-from google.ads.admanager.client import AdManagerClient
+from googleads import ad_manager
 from google.cloud import secretmanager
 
 
@@ -26,7 +26,7 @@ class GAMReportClient:
         self.secret_name = secret_name
         self.client = self._initialize_client()
 
-    def _initialize_client(self) -> AdManagerClient:
+    def _initialize_client(self):
         """
         Initialize AdManager client from Secret Manager credentials.
 
@@ -42,13 +42,13 @@ class GAMReportClient:
         # Parse YAML and create client
         credentials_dict = yaml.safe_load(credentials_yaml)
 
-        # Create temporary file for credentials (required by AdManagerClient)
+        # Create temporary file for credentials (required by googleads)
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
             yaml.dump(credentials_dict, temp_file)
             temp_path = temp_file.name
 
         try:
-            client = AdManagerClient.load_from_storage(temp_path)
+            client = ad_manager.AdManagerClient.LoadFromStorage(temp_path)
             return client
         finally:
             # Clean up temp file
@@ -76,7 +76,7 @@ class GAMReportClient:
         Returns:
             Report job ID
         """
-        report_service = self.client.GetService("ReportService", version="v202411")
+        report_service = self.client.GetService("ReportService", version="v202502")
 
         # Build report job
         report_job = {
@@ -102,7 +102,7 @@ class GAMReportClient:
 
         # Run report job
         report_job = report_service.runReportJob(report_job)
-        return report_job["id"]
+        return report_job['id']
 
     def wait_for_report(self, report_job_id: int, timeout: int = 300) -> bool:
         """
@@ -115,7 +115,7 @@ class GAMReportClient:
         Returns:
             True if completed successfully, False otherwise
         """
-        report_service = self.client.GetService("ReportService", version="v202411")
+        report_service = self.client.GetService("ReportService", version="v202502")
 
         start_time = time.time()
         while time.time() - start_time < timeout:
@@ -141,7 +141,7 @@ class GAMReportClient:
         Returns:
             DataFrame containing report data
         """
-        report_service = self.client.GetService("ReportService", version="v202411")
+        report_service = self.client.GetService("ReportService", version="v202502")
 
         # Get report download URL
         report_download_options = {
@@ -217,6 +217,13 @@ class GAMReportClient:
 
         df = df.rename(columns=column_mapping)
 
+        # Keep only the columns we want (drop any extra columns from GAM)
+        expected_columns = [
+            "date", "ad_unit_id", "ad_unit_name", "order_id", "order_name",
+            "device_category", "creative_size", "ad_server_impressions", "ad_server_clicks"
+        ]
+        df = df[[col for col in expected_columns if col in df.columns]]
+
         # Convert types
         df["date"] = pd.to_datetime(df["date"]).dt.date
         df["ad_unit_id"] = pd.to_numeric(df["ad_unit_id"], errors="coerce").astype("Int64")
@@ -269,6 +276,12 @@ class GAMReportClient:
         }
 
         df = df.rename(columns=column_mapping)
+
+        # Keep only the columns we want (drop any extra columns from GAM)
+        expected_columns = [
+            "country_id", "country_name", "ad_server_impressions", "ad_server_clicks"
+        ]
+        df = df[[col for col in expected_columns if col in df.columns]]
 
         # Convert types
         df["country_id"] = pd.to_numeric(df["country_id"], errors="coerce").astype("Int64")

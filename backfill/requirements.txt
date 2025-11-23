@@ -1,4 +1,4 @@
-google-ads
+googleads
 google-cloud-bigquery
 google-cloud-secret-manager
 pandas
