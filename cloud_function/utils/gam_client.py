@@ -33,6 +33,9 @@ class GAMReportClient:
         Returns:
             Initialized AdManagerClient
         """
+        import os
+        import json
+
         # Fetch credentials from Secret Manager
         secret_client = secretmanager.SecretManagerServiceClient()
         secret_path = f"projects/{self.project_id}/secrets/{self.secret_name}/versions/latest"
@@ -42,7 +45,34 @@ class GAMReportClient:
         # Parse YAML and create client
         credentials_dict = yaml.safe_load(credentials_yaml)
 
-        # Create temporary file for credentials (required by googleads)
+        # Extract service account key if present and create key file
+        sa_key_path = None
+        if 'service_account_key' in credentials_dict:
+            sa_key_data = credentials_dict['service_account_key']
+
+            # If it's a string, parse it as JSON
+            if isinstance(sa_key_data, str):
+                sa_key_data = json.loads(sa_key_data)
+
+            # Create temporary file for service account key
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as sa_key_file:
+                json.dump(sa_key_data, sa_key_file)
+                sa_key_path = sa_key_file.name
+
+            # Update path in config
+            if 'ad_manager' in credentials_dict:
+                credentials_dict['ad_manager']['path_to_private_key_file'] = sa_key_path
+
+            # Remove the embedded key from dict
+            del credentials_dict['service_account_key']
+
+        # For Cloud Functions, remove empty path_to_private_key_file
+        if 'ad_manager' in credentials_dict:
+            if 'path_to_private_key_file' in credentials_dict['ad_manager']:
+                if not credentials_dict['ad_manager']['path_to_private_key_file']:
+                    del credentials_dict['ad_manager']['path_to_private_key_file']
+
+        # Create temporary file for googleads YAML config
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
             yaml.dump(credentials_dict, temp_file)
             temp_path = temp_file.name
@@ -51,9 +81,10 @@ class GAMReportClient:
             client = ad_manager.AdManagerClient.LoadFromStorage(temp_path)
             return client
         finally:
-            # Clean up temp file
-            import os
+            # Clean up temp files
             os.unlink(temp_path)
+            if sa_key_path and os.path.exists(sa_key_path):
+                os.unlink(sa_key_path)
 
     def create_report_job(
         self,
