@@ -297,9 +297,19 @@ def main():
 
             print(f"  Retrieved {len(df)} rows")
 
+            # Delete existing data for this period to avoid duplicates
+            print("  Deleting existing data for this period...")
+            table_id = f"{args.project_id}.{args.dataset_id}.report_inventory_daily"
+            delete_query = f"""
+                DELETE FROM `{table_id}`
+                WHERE DATE(date) >= '{month_start.date()}'
+                AND DATE(date) <= '{month_end.date()}'
+            """
+            delete_job = bq_client.query(delete_query)
+            delete_job.result()
+
             # Insert into BigQuery
             print("  Inserting into BigQuery...")
-            table_id = f"{args.project_id}.{args.dataset_id}.report_inventory_daily"
             job = bq_client.load_table_from_dataframe(df, table_id)
             job.result()
 
@@ -332,9 +342,19 @@ def main():
 
             print(f"  Retrieved {len(df_geo)} rows")
 
+            # Delete existing data for this period to avoid duplicates
+            print("  Deleting existing data for this period...")
+            table_id_geo = f"{args.project_id}.{args.dataset_id}.report_geo_monthly"
+            report_date = month_start.replace(day=1).date()
+            delete_query = f"""
+                DELETE FROM `{table_id_geo}`
+                WHERE DATE(report_date) = '{report_date}'
+            """
+            delete_job = bq_client.query(delete_query)
+            delete_job.result()
+
             # Insert into BigQuery
             print("  Inserting into BigQuery...")
-            table_id_geo = f"{args.project_id}.{args.dataset_id}.report_geo_monthly"
             job_geo = bq_client.load_table_from_dataframe(df_geo, table_id_geo)
             job_geo.result()
 

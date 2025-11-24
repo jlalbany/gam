@@ -69,6 +69,23 @@ def process_inventory_daily(
             rows_fetched=len(df),
         )
 
+        # Delete existing data for yesterday to avoid duplicates
+        from datetime import datetime, timedelta
+        yesterday = (datetime.now() - timedelta(days=1)).date()
+        StructuredLogger.info(
+            f"Deleting existing data for {yesterday}",
+            report_type=REPORT_TYPE_INVENTORY_DAILY,
+            date=str(yesterday),
+        )
+        delete_query = f"""
+            DELETE FROM `{PROJECT_ID}.{DATASET_ID}.{TABLE_INVENTORY_DAILY}`
+            WHERE DATE(date) = '{yesterday}'
+        """
+        from google.cloud import bigquery as bq
+        bq_delete_client = bq.Client(project=PROJECT_ID)
+        delete_job = bq_delete_client.query(delete_query)
+        delete_job.result()
+
         # Insert into BigQuery
         StructuredLogger.info(
             "Inserting data into BigQuery",
@@ -149,6 +166,23 @@ def process_geo_monthly(
             rows_fetched=len(df),
             report_date=df["report_date"].iloc[0].isoformat(),
         )
+
+        # Delete existing data for last month to avoid duplicates
+        from datetime import datetime, timedelta
+        report_date_to_delete = df["report_date"].iloc[0]
+        StructuredLogger.info(
+            f"Deleting existing data for {report_date_to_delete}",
+            report_type=REPORT_TYPE_GEO_MONTHLY,
+            report_date=str(report_date_to_delete),
+        )
+        delete_query = f"""
+            DELETE FROM `{PROJECT_ID}.{DATASET_ID}.{TABLE_GEO_MONTHLY}`
+            WHERE DATE(report_date) = '{report_date_to_delete}'
+        """
+        from google.cloud import bigquery as bq
+        bq_delete_client = bq.Client(project=PROJECT_ID)
+        delete_job = bq_delete_client.query(delete_query)
+        delete_job.result()
 
         # Insert into BigQuery
         StructuredLogger.info(
