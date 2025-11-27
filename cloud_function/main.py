@@ -14,19 +14,19 @@ from flask import Request
 from config import (
     PROJECT_ID,
     DATASET_ID,
-    SECRET_NAME,
+    NETWORK_CODE,
     REPORT_TYPE_INVENTORY_DAILY,
     REPORT_TYPE_GEO_MONTHLY,
     TABLE_INVENTORY_DAILY,
     TABLE_GEO_MONTHLY,
 )
-from utils.gam_client import GAMReportClient
+from utils.gam_rest_client import GAMRestClient
 from utils.bigquery_client import BigQueryClient
 from utils.logger import StructuredLogger
 
 
 def process_inventory_daily(
-    gam_client: GAMReportClient,
+    gam_client: GAMRestClient,
     bq_client: BigQueryClient,
 ) -> Dict[str, Any]:
     """
@@ -52,7 +52,7 @@ def process_inventory_daily(
             date_range="YESTERDAY",
         )
 
-        df = gam_client.get_inventory_daily_report(date_range_type="YESTERDAY")
+        df = gam_client.get_inventory_daily_report()
 
         if df.empty:
             StructuredLogger.warning(
@@ -123,7 +123,7 @@ def process_inventory_daily(
 
 
 def process_geo_monthly(
-    gam_client: GAMReportClient,
+    gam_client: GAMRestClient,
     bq_client: BigQueryClient,
 ) -> Dict[str, Any]:
     """
@@ -149,7 +149,7 @@ def process_geo_monthly(
             date_range="LAST_MONTH",
         )
 
-        df = gam_client.get_geo_monthly_report(date_range_type="LAST_MONTH")
+        df = gam_client.get_geo_monthly_report()
 
         if df.empty:
             StructuredLogger.warning(
@@ -264,7 +264,7 @@ def main(request: Request) -> tuple:
 
         # Initialize clients
         StructuredLogger.info("Initializing clients", report_type=report_type)
-        gam_client = GAMReportClient(project_id=PROJECT_ID, secret_name=SECRET_NAME)
+        gam_client = GAMRestClient(project_id=PROJECT_ID, network_code=NETWORK_CODE)
         bq_client = BigQueryClient(project_id=PROJECT_ID, dataset_id=DATASET_ID)
 
         # Route to appropriate handler
