@@ -187,13 +187,14 @@ def get_fill_rate_report(gam_client, start_date: datetime, end_date: datetime) -
         "DATE",
         "AD_UNIT_NAME",
     ]
+    # Use correct SOAP API column names (TOTAL_* prefix)
     columns = [
-        "UNFILLED_IMPRESSIONS",
-        "CODE_SERVED_COUNT",
-        "RESPONSES_SERVED",
+        "TOTAL_INVENTORY_LEVEL_UNFILLED_IMPRESSIONS",
+        "TOTAL_CODE_SERVED_COUNT",
+        "TOTAL_RESPONSES_SERVED",
         "AD_SERVER_IMPRESSIONS",
-        "FILL_RATE",
-        "AD_REQUESTS",
+        "TOTAL_FILL_RATE",
+        "TOTAL_AD_REQUESTS",
     ]
 
     df = run_report(gam_client, dimensions, columns, start_date, end_date)
@@ -202,19 +203,26 @@ def get_fill_rate_report(gam_client, start_date: datetime, end_date: datetime) -
     print(f"    Columns returned by GAM: {list(df.columns)}")
 
     # Transform to match REST API schema
+    # With adUnitView=HIERARCHICAL, AD_UNIT_NAME becomes "Ad unit 1", "Ad unit 2", etc.
+    # Map hierarchical columns first
+    if "Ad unit 1" in df.columns:
+        df = df.rename(columns={"Ad unit 1": "ad_unit_top_level"})
+    if "Ad unit 2" in df.columns:
+        df = df.rename(columns={"Ad unit 2": "ad_unit_name"})
+
     column_mapping = {
         "Dimension.DATE": "date",
         "Dimension.AD_UNIT_NAME": "ad_unit_name",
-        "Column.UNFILLED_IMPRESSIONS": "unfilled_impressions",
-        "Column.CODE_SERVED_COUNT": "code_served_count",
-        "Column.RESPONSES_SERVED": "responses_served",
+        "Column.TOTAL_INVENTORY_LEVEL_UNFILLED_IMPRESSIONS": "unfilled_impressions",
+        "Column.TOTAL_CODE_SERVED_COUNT": "code_served_count",
+        "Column.TOTAL_RESPONSES_SERVED": "responses_served",
         "Column.AD_SERVER_IMPRESSIONS": "ad_server_impressions",
-        "Column.FILL_RATE": "fill_rate",
-        "Column.AD_REQUESTS": "ad_requests",
+        "Column.TOTAL_FILL_RATE": "fill_rate",
+        "Column.TOTAL_AD_REQUESTS": "ad_requests",
     }
     df = df.rename(columns=column_mapping)
 
-    # Keep only expected columns that exist
+    # Keep only expected columns that exist (table has no ad_unit_top_level)
     expected_columns = [
         "date", "ad_unit_name", "unfilled_impressions", "code_served_count",
         "responses_served", "ad_server_impressions", "fill_rate", "ad_requests"
@@ -472,10 +480,10 @@ def backfill_fill_rate(gam_client, bq_client, start_date: datetime, end_date: da
             print(f"  Retrieved {len(df)} rows")
 
             if not dry_run:
-                ensure_table_exists(bq_client, "fill_rate_daily")
+                # Table name matches existing report_fill_rate table
+                table_id = f"{PROJECT_ID}.{DATASET_ID}.report_fill_rate"
 
                 # Delete existing data for this period
-                table_id = f"{PROJECT_ID}.{DATASET_ID}.fill_rate_daily"
                 delete_query = f"""
                     DELETE FROM `{table_id}`
                     WHERE DATE(date) >= '{month_start.date()}'
