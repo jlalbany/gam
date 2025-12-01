@@ -41,25 +41,27 @@ class GAMRestClient:
     @staticmethod
     def convert_month_year(value: int) -> date:
         """
-        Convert YYMM format to first day of month.
+        Convert GAM MONTH_YEAR format to first day of month.
 
-        GAM uses format: (year - 2010) * 100 + month
+        GAM uses format: (year - 2010) * 100 + month_0indexed
+        Where month_0indexed is 0=January, 1=February, ..., 11=December
 
         Args:
-            value: Integer in YYMM format (e.g., 1510 for October 2025)
+            value: Integer in GAM format (e.g., 1510 for November 2025)
 
         Returns:
             Date object for first day of that month
 
         Example:
-            1510 → 2025-10-01 (15 years since 2010 + month 10)
-            1509 → 2025-09-01 (15 years since 2010 + month 09)
+            1510 → 2025-11-01 (15 years since 2010 + month 10 (0-indexed) = November)
+            1509 → 2025-10-01 (15 years since 2010 + month 9 (0-indexed) = October)
         """
         year_offset = value // 100  # 1510 // 100 = 15
-        month = value % 100         # 1510 % 100 = 10
+        month_0indexed = value % 100  # 1510 % 100 = 10
 
-        # GAM format: years since 2010
+        # GAM format: years since 2010, months are 0-indexed
         year = 2010 + year_offset
+        month = month_0indexed + 1  # Convert 0-indexed to 1-indexed (10 → 11 for November)
 
         return date(year, month, 1)
 
