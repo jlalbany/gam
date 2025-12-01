@@ -19,10 +19,10 @@ REPORT_IDS = {
 
 # BigQuery Table Names
 TABLES = {
-    "audience_interest": "audience_interest_monthly",
+    "audience_interest": "report_audience_interest",
     "inventory_daily": "inventory_daily",
-    "audience_demographics": "audience_demographics_monthly",
-    "fill_rate": "fill_rate_daily",
+    "audience_demographics": "report_audience_demographics",
+    "fill_rate": "report_fill_rate",
     "geo_monthly": "geo_monthly",
 }
 
