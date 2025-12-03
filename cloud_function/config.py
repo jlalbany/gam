@@ -147,6 +147,8 @@ TYPE_CONVERSIONS = {
     },
     "geo_monthly": {
         "report_date": "month_year",  # Special: YYMM → DATE (first of month)
+        "country_name": "string",  # Ensure string type (GAM returns 0 for unknown)
+        "country_code": "string",  # Ensure string type (GAM returns 0 for unknown)
         "ad_server_impressions": "int64",
         "ad_server_clicks": "int64",
         "active_view_measurable_rate": "float64",
