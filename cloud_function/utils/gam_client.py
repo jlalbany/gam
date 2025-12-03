@@ -226,6 +226,8 @@ class GAMReportClient:
         columns = [
             "AD_SERVER_IMPRESSIONS",
             "AD_SERVER_CLICKS",
+            "AD_SERVER_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
+            "AD_SERVER_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
         ]
 
         # Create and run report
@@ -244,6 +246,8 @@ class GAMReportClient:
             "Dimension.CREATIVE_SIZE": "creative_size",
             "Column.AD_SERVER_IMPRESSIONS": "ad_server_impressions",
             "Column.AD_SERVER_CLICKS": "ad_server_clicks",
+            "Column.AD_SERVER_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS": "active_view_measurable_impressions",
+            "Column.AD_SERVER_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS": "active_view_viewable_impressions",
         }
 
         df = df.rename(columns=column_mapping)
@@ -251,7 +255,8 @@ class GAMReportClient:
         # Keep only the columns we want (drop any extra columns from GAM)
         expected_columns = [
             "date", "ad_unit_id", "ad_unit_name", "order_id", "order_name",
-            "device_category", "creative_size", "ad_server_impressions", "ad_server_clicks"
+            "device_category", "creative_size", "ad_server_impressions", "ad_server_clicks",
+            "active_view_measurable_impressions", "active_view_viewable_impressions"
         ]
         df = df[[col for col in expected_columns if col in df.columns]]
 
@@ -261,6 +266,8 @@ class GAMReportClient:
         df["order_id"] = pd.to_numeric(df["order_id"], errors="coerce").astype("Int64")
         df["ad_server_impressions"] = pd.to_numeric(df["ad_server_impressions"], errors="coerce").astype("Int64")
         df["ad_server_clicks"] = pd.to_numeric(df["ad_server_clicks"], errors="coerce").astype("Int64")
+        df["active_view_measurable_impressions"] = pd.to_numeric(df["active_view_measurable_impressions"], errors="coerce").astype("Int64")
+        df["active_view_viewable_impressions"] = pd.to_numeric(df["active_view_viewable_impressions"], errors="coerce").astype("Int64")
 
         return df
 
