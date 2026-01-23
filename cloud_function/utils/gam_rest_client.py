@@ -5,6 +5,8 @@ from datetime import datetime, timedelta, date
 from typing import Dict, List, Optional
 import pandas as pd
 
+import google.auth
+from google.auth import impersonated_credentials
 from google.ads import admanager_v1
 from google.ads.admanager_v1.types import ReportDefinition
 from google.type import date_pb2
@@ -15,6 +17,9 @@ from config import (
     COLUMN_MAPPINGS,
     TYPE_CONVERSIONS,
 )
+
+# OAuth scopes required for Google Ad Manager API
+GAM_SCOPES = ["https://www.googleapis.com/auth/admanager"]
 
 
 class GAMRestClient:
@@ -31,11 +36,10 @@ class GAMRestClient:
         self.project_id = project_id
         self.network_code = network_code
 
-        # Initialize Report Service client
-        # Uses Application Default Credentials (ADC):
-        # - In Cloud Functions: Uses the service account attached to the function
-        # - Locally: Uses GOOGLE_APPLICATION_CREDENTIALS or gcloud auth application-default login
-        self.report_client = admanager_v1.ReportServiceClient()
+        # Initialize Report Service client with explicit scopes
+        # Get default credentials and ensure they have the correct scopes
+        credentials, _ = google.auth.default(scopes=GAM_SCOPES)
+        self.report_client = admanager_v1.ReportServiceClient(credentials=credentials)
         self.parent = f"networks/{network_code}"
 
     @staticmethod

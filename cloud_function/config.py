@@ -107,6 +107,7 @@ COLUMN_MAPPINGS = {
 TYPE_CONVERSIONS = {
     "audience_interest": {
         "report_date": "month_year",  # Special: YYMM → DATE (first of month)
+        "interest_category": "string",  # Ensure string type for pyarrow compatibility
         "bounce_rate": "float64",
         "engagement_rate": "float64",
         "ga_views_per_user": "float64",
