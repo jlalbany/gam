@@ -1,0 +1,56 @@
+[
+  {
+    "name": "date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Date du rapport"
+  },
+  {
+    "name": "ad_unit_id",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Identifiant de l'unité publicitaire"
+  },
+  {
+    "name": "ad_unit_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Nom de l'unité publicitaire"
+  },
+  {
+    "name": "order_id",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Identifiant de la commande"
+  },
+  {
+    "name": "order_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Nom de la commande"
+  },
+  {
+    "name": "device_category",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Catégorie d'appareil"
+  },
+  {
+    "name": "creative_size",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Taille de la création publicitaire"
+  },
+  {
+    "name": "ad_server_impressions",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Nombre d'impressions"
+  },
+  {
+    "name": "ad_server_clicks",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Nombre de clics"
+  }
+]
